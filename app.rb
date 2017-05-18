@@ -37,7 +37,7 @@ get '/:document_type/:content_id/:version_a/:version_b' do
   redirect "/#{params[:document_type]}/#{params[:content_id]}/#{params[:version_a]}/#{params[:version_b]}/technicalhashdiff"
 end
 
-get '/:document_type/:content_id/:version_a/:version_b/:view' do
+get '/:document_type/:content_id/:version_a/:version_b/:view/?:field_name?' do
   document = data[params[:document_type]][params[:content_id]]
 
   content_a = document[params[:version_a].to_i].sort_by_key(true)
@@ -77,10 +77,12 @@ get '/:document_type/:content_id/:version_a/:version_b/:view' do
     locals[:diff] = CombinedDiff.new(content_a, content_b, sidebyside: true, prose: true)
   elsif params[:view] == "nontechnicallayers"
     locals[:diff] = CombinedDiff.new(content_a, content_b, prose: true)
+  elsif params[:view] == "nontechnicalfieldinline"
+    locals[:diff] = CombinedDiff.new(content_a, content_b, prose: true, field_name: params[:field_name])
   end
 
   erb :layout, layout: false do
-    erb :index, locals: locals do
+    erb :index, locals: locals, layout: (params[:field_name] ? false : true) do
       erb :"styles/#{params[:view]}", locals: locals
     end
   end
